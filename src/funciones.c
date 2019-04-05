@@ -1,44 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
 
-//Vecinos Toroide
-void devolverVecinostoroide(int l, int id, int *vecinos){
 
+int rank, size;
+MPI_Status status;
 
+/* Función que abre el archivo datos.dat donde se encuentran los números a distribuir. */
+FILE *abrirArchivo()
+{
+	char nombre_archivo[] = "datos.dat";
+	FILE *f;
+
+	f = fopen(nombre_archivo, "r");
+
+	if (f == NULL)
+	{
+		perror("Error al abrir el archivo datos.dat.\n");
+		exit(EXIT_FAILURE);
+	}
+	return f;
 }
 
+/* Función que obtiene el número de números que hay en el archivo. */
+int numerosContenidos(FILE *f)
+{
+	int total = 0;
+	float numero = 0;
 
-void vecinosToroide(int id, int *vecinos, int l){
-	int f;
-	int c;
-	int vecino_n;
-	int vecino_s;
-	int vecino_d;
-	int vecino_i;
-	f=id/l;
-	c=id%l;
-
-
-	if(c==0){
-		vecino_i = (f*l)+(l-1);
-	}else{
-		vecino_i = (f*l)+(c-1);
+	fscanf(f, "%f,", &numero);
+	while (!feof(f))
+	{
+		total++;
+		fscanf(f, "%f,", &numero);
 	}
 
-	if(c==l-1){
-		vecino_d = (f*l);
-	}else{
-		vecino_d = (f*l)+(c+1);
+	rewind(f);
+
+	return total;
+}
+
+/* Función que obtiene los números que hay en el archivo */
+void obtenerNumeros(FILE *f, float array_numeros[])
+{
+	float numero = 0;
+
+	//Contamos los numeros que hay en el fichero
+	fscanf(f, "%f,", &numero);
+	array_numeros[0] = numero;
+	for (int i = 0; i < size - 1; i++)
+	{
+		fscanf(f, "%f,", &numero);
+		array_numeros[i + 1] = numero;
 	}
-	
-	if(f==0){
-		vecino_s = ((l-1)*l)+c;
-	}else{
-		vecino_s = ((f-1)*l)+c;
+}
+
+/* Función que distribuye los números a los procesos de la red */
+int distribuirNumeros(int elementos, float array_numeros[], int total_numeros)
+{
+	float elemento = 0;
+
+	for (unsigned int i = 0; i < elementos; i++)
+	{
+		elemento = array_numeros[i];
+		MPI_Bsend(&elemento, 1, MPI_FLOAT, i + 1, rank, MPI_COMM_WORLD);
 	}
 
-	if(f==l-1){
-		vecino_n = c;
-	}else{
-		vecino_n = ((f+1)*l)+c;
-	}
+	return EXIT_SUCCESS;
+}
 
+/* Función que recibe el número correspondiente a cada proceso de la red */
+float recibirNumero()
+{
+	float elemento = 0;
+	MPI_Recv(&elemento, 1, MPI_FLOAT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	return elemento;
 }
