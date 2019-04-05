@@ -11,3 +11,6 @@ Asignación de valores desde un archivo a una red toroide e hipercubo y cálculo
 ### Versión 1.0
  - Función para calcular el mínimo de una red toroide lista.
    - Funciones comunes a ambas puestas en otro archivo.
+
+### Versión 2.0
+ - Función para calcular el máximo de una red hipercubo lista.

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "funciones.c"
 
+#DEFINE TOROIDE 1
+
 #define NORTE 0
 #define SUR 1
 #define ESTE 2
@@ -13,8 +15,10 @@ int rank, size;
 MPI_Status status;
 
 /* Función que calcula el mínimo de 2 números */
-float minimo(float a, float b){
-	if(a<b){
+float minimo(float a, float b)
+{
+	if (a < b)
+	{
 		return a;
 	}
 	return b;
@@ -87,12 +91,13 @@ int main(int argc, char *argv[])
 
 	float numero = 0;
 	int lado = 3;
-	int elementos_toroide = lado * lado;
+	int distribuidor = 0;
 
-	if (rank == 0)
+	if (rank == distribuidor)
 	{
 		FILE *f;
 		int total_numeros = 0;
+		int elementos_toroide = lado * lado;
 
 		f = abrirArchivo();
 		total_numeros = numerosContenidos(f);
@@ -103,7 +108,7 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 		obtenerNumeros(f, &array_numeros);
-		distribuirNumeros(elementos_toroide, &array_numeros, total_numeros);
+		distribuirNumeros(elementos_toroide, &array_numeros, TOROIDE);
 		MPI_Recv(&numero, 1, MPI_FLOAT, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		printf("El número mínimo de la red es %f\n.", numero);
 	}
@@ -111,12 +116,12 @@ int main(int argc, char *argv[])
 	{
 		int vecinos[4];
 
-		numero = recibirNumero();
+		numero = recibirNumero(distribuidor);
 		calcularVecinos(&vecinos, lado);
 		numero = calcularMinimo(&vecinos, lado, numero);
 		if (rank == 1)
 		{
-			MPI_Bsend(&numero, 1, MPI_FLOAT, 0, rank, MPI_COMM_WORLD);
+			MPI_Bsend(&numero, 1, MPI_FLOAT, distribuidor, rank, MPI_COMM_WORLD);
 		}
 	}
 	MPI_Finalize();

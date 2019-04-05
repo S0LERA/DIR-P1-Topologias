@@ -4,6 +4,8 @@
 #include "funciones.c"
 #include <math.h>
 
+#define HIPERCUBO 0
+
 //Variables MPI
 int rank, size;
 MPI_Status status;
@@ -33,8 +35,8 @@ float calcularMaximo(int vecinos[], int dimensiones, float numero)
     for (unsigned int i = 0; i < dimensiones; i++)
     {
         MPI_Bsend(&numero, 1, MPI_FLOAT, vecinos[i], rank, MPI_COMM_WORLD);
-		MPI_Recv(&numero_vecino, 1, MPI_FLOAT, vecinos[i], MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		numero = maximo(numero, numero_vecino);
+        MPI_Recv(&numero_vecino, 1, MPI_FLOAT, vecinos[i], MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        numero = maximo(numero, numero_vecino);
     }
 
     return numero;
@@ -48,12 +50,13 @@ int main(int argc, char *argv[])
 
     float numero = 0;
     int dimensiones = 3;
-    int elementos_hipercubo = (int)pow(2, dimensiones);
+    int distribuidor = size - 1;
 
-    if (rank == 0)
+    if (rank == distribuidor)
     {
         FILE *f;
         int total_numeros = 0;
+        int elementos_hipercubo = (int)pow(2, dimensiones);
 
         f = abrirArchivo();
         total_numeros = numerosContenidos(f);
@@ -64,7 +67,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
         obtenerNumeros(f, &array_numeros);
-        distribuirNumeros(elementos_hipercubo, &array_numeros, total_numeros);
+        distribuirNumeros(elementos_hipercubo, &array_numeros, HIPERCUBO);
         MPI_Recv(&numero, 1, MPI_FLOAT, 1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         printf("El número máximo de la red es %f\n.", numero);
     }
@@ -72,12 +75,12 @@ int main(int argc, char *argv[])
     {
         int vecinos[dimensiones];
 
-        numero = recibirNumero();
+        numero = recibirNumero(distribuidor);
         calcularVecinos(&vecinos, dimensiones);
         numero = calcularMaximo(&vecinos, dimensiones, numero);
         if (rank == 1)
         {
-            MPI_Bsend(&numero, 1, MPI_FLOAT, 0, rank, MPI_COMM_WORLD);
+            MPI_Bsend(&numero, 1, MPI_FLOAT, distribuidor, rank, MPI_COMM_WORLD);
         }
     }
     MPI_Finalize();

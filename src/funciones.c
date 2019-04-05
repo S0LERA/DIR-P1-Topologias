@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-
 int rank, size;
 MPI_Status status;
 
@@ -56,23 +55,24 @@ void obtenerNumeros(FILE *f, float array_numeros[])
 }
 
 /* Función que distribuye los números a los procesos de la red */
-int distribuirNumeros(int elementos, float array_numeros[], int total_numeros)
+int distribuirNumeros(int elementos, float array_numeros[], int mode)
 {
 	float elemento = 0;
 
 	for (unsigned int i = 0; i < elementos; i++)
 	{
 		elemento = array_numeros[i];
-		MPI_Bsend(&elemento, 1, MPI_FLOAT, i + 1, rank, MPI_COMM_WORLD);
+			MPI_Bsend(&elemento, 1, MPI_FLOAT, i + mode, rank, MPI_COMM_WORLD);
+		
 	}
 
 	return EXIT_SUCCESS;
 }
 
 /* Función que recibe el número correspondiente a cada proceso de la red */
-float recibirNumero()
+float recibirNumero(int id)
 {
 	float elemento = 0;
-	MPI_Recv(&elemento, 1, MPI_FLOAT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	MPI_Recv(&elemento, 1, MPI_FLOAT, id, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 	return elemento;
 }
