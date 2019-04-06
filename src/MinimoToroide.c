@@ -1,9 +1,21 @@
+/*************************************************************************************
+* Proyecto:                Primera Práctica de Diseño de Infraestructura de red
+*
+* Nombre del programa:     MinimoToroide.c
+*
+* Autor:                   Pablo Rodríguez Solera
+*
+* Fecha de creación:       13/03/2019
+*
+* Proposito:               - Econtrar número mínimo entre los distribuidos en los
+*							 nodos de una red Toroide.
+*************************************************************************************/
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "funciones.c"
 
-#DEFINE TOROIDE 1
+#define TOROIDE 1
 
 #define NORTE 0
 #define SUR 1
@@ -89,9 +101,29 @@ int main(int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	int lado = atoi(argv[1]);
 	float numero = 0;
-	int lado = 3;
 	int distribuidor = 0;
+
+    if (argc != 2)
+    {
+        if (rank == 0)
+        {
+            fprintf(stderr, "\x1b[31mError en la entrada de argumentos del programa.\n \x1b[0m");
+            fprintf(stderr, "Uso: mpirun -n *nº procesos* MinimoToroide.\n");
+        }
+        MPI_Finalize();
+        return EXIT_FAILURE;
+    }
+
+	if(size < lado*lado+1){
+        if (rank == 0)
+        {
+            fprintf(stderr, "\x1b[31mError: No se han lanzado los suficientes procesos para un toroide de lado %d, se deben lanzar %d procesos.\n \x1b[0m", lado, lado*lado+1);
+        }
+        MPI_Finalize();
+        return EXIT_FAILURE;
+	}
 
 	if (rank == distribuidor)
 	{
@@ -104,7 +136,8 @@ int main(int argc, char *argv[])
 		float array_numeros[total_numeros];
 		if (elementos_toroide > total_numeros)
 		{
-			printf("No hay suficientes números en el archivo datos para un toroide de lado %d\n", lado);
+			printf("\x1b[31mError: No hay suficientes números en el archivo datos para un toroide de lado %d\n \x1b[0m", lado);
+			MPI_Finalize();
 			return EXIT_FAILURE;
 		}
 		obtenerNumeros(f, &array_numeros);

@@ -55,14 +55,14 @@ void obtenerNumeros(FILE *f, float array_numeros[])
 }
 
 /* Función que distribuye los números a los procesos de la red */
-int distribuirNumeros(int elementos, float array_numeros[], int mode)
+int distribuirNumeros(int elementos, float array_numeros[], int modo)
 {
 	float elemento = 0;
 
 	for (unsigned int i = 0; i < elementos; i++)
 	{
 		elemento = array_numeros[i];
-			MPI_Bsend(&elemento, 1, MPI_FLOAT, i + mode, rank, MPI_COMM_WORLD);
+			MPI_Bsend(&elemento, 1, MPI_FLOAT, i + modo, rank, MPI_COMM_WORLD);
 		
 	}
 
