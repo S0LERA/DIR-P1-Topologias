@@ -34,3 +34,6 @@ Siempre se debe lanzar al menos un proceso más que el número de nodos de la re
  - Documentado README.
  - Makefile creado.
  - Gestión de errores básica.
+
+### Versión 2.5
+ - Añadida documentación.
