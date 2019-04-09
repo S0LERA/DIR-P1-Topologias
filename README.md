@@ -37,3 +37,6 @@ Siempre se debe lanzar al menos un proceso más que el número de nodos de la re
 
 ### Versión 2.5
  - Añadida documentación.
+
+### Versión 2.6
+ - Documentación reparada.
